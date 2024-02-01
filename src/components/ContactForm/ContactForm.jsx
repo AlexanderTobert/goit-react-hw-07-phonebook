@@ -38,7 +38,7 @@ const ContactForm = () => {
       id: nanoid(),
     };
 
-    dispatch(addContact(formattedData).unwrap().then(Notify.success(`${name} успешно добавлен в контакты`)));
+    dispatch(addContact(formattedData)).unwrap().then(Notify.success(`${name} успешно добавлен в контакты`));
     setFormData({ name: '', number: '' });
   };
 
