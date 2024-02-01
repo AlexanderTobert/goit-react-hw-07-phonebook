@@ -3,11 +3,10 @@ import { Notify } from 'notiflix';
 import css from './ContactForm.module.css';
 import { nanoid } from 'nanoid';
 import { useDispatch, useSelector } from 'react-redux';
-import { addContact } from '../../redux/contactsSlice';
+import { addContact } from '../../redux/api';
 import { getContacts } from '../../redux/selectors';
 
 const ContactForm = () => {
-  
   const [formData, setFormData] = useState({ name: '', number: '' });
   const dispatch = useDispatch();
   const contacts = useSelector(getContacts);
@@ -17,18 +16,19 @@ const ContactForm = () => {
 
     const { name, number } = formData;
 
-    if (contacts.find && contacts.find(e => e.name === name)) {
-      Notify.warning(`${name} уже есть в контактах`);
-      return;
-    }
-
     if (isNaN(number)) {
-      Notify.failure('Пожалуйста, введите корректный номер.');
+      Notify.warning('Пожалуйста, введите корректный номер.');
       return;
     }
 
     if (/\d/.test(name)) {
-      Notify.failure('Имя не должно содержать цифры.');
+      Notify.warning('Имя не должно содержать цифры.');
+      return;
+    }
+
+    const existingContact = contacts.find(contact => contact.name === name);
+    if (existingContact) {
+      Notify.failure(`Контакт ${name} уже существует.`);
       return;
     }
 
@@ -38,7 +38,7 @@ const ContactForm = () => {
       id: nanoid(),
     };
 
-    dispatch(addContact(formattedData));
+    dispatch(addContact(formattedData).unwrap().then(Notify.success(`${name} успешно добавлен в контакты`)));
     setFormData({ name: '', number: '' });
   };
 

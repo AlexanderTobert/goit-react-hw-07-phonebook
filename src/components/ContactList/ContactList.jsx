@@ -1,24 +1,40 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { getContacts, getFilter } from '../../redux/selectors';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { getFilteredContacts, getError, getIsLoading } from '../../redux/selectors';
+import { fetchContacts } from '../../redux/api';
 import Contact from '../Contact/Contact';
+import { ThreeDots } from 'react-loader-spinner';
 import css from './ContactList.module.css';
 
 
 const ContactList = () => {
-  
-  const contacts = useSelector(getContacts);
-  const filter = useSelector(getFilter);
-  
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
+  const dispatch = useDispatch();
 
-  const contactsForRender = !filter ? contacts : filteredContacts;
+  const contacts = useSelector(getFilteredContacts);
+  const isLoading = useSelector(getIsLoading);
+  const error = useSelector(getError);
+
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
 
   return (
-    <ul className={css.item}>
-      {contactsForRender?.map(({ id, name, number }) => (
+    <div>
+      {isLoading && <ThreeDots
+        visible={true}
+        height="80"
+        width="80"
+        color="#4fa94d"
+        radius="9"
+        ariaLabel="three-dots-loading"
+        wrapperStyle={{}}
+        wrapperClass=""
+      />}
+
+      {error && <div> <p> {error} </p> </div>}
+
+      <ul className={css.item}>
+      {contacts?.map(({ id, name, number }) => (
         <Contact
           key={id}
           id={id}
@@ -27,6 +43,7 @@ const ContactList = () => {
         />
       ))}
     </ul>
+    </div>
   );
 };
 
